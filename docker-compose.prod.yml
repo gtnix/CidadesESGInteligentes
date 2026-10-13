@@ -1,0 +1,30 @@
+# Overlay de PRODUÇÃO — usar com:
+#   docker compose -p gestao-esg-prod -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# ou: ./scripts/deploy.sh production
+# A porta do SQL Server NÃO é publicada (acesso só pela rede interna).
+
+services:
+  api:
+    container_name: gestao-residuos-api-prod
+    image: gestao-residuos-esg:prod
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    networks:
+      - esg-network
+
+  db:
+    container_name: gestao-residuos-db-prod
+    volumes:
+      - sqlserver_prod_data:/var/opt/mssql
+    networks:
+      - esg-network
+
+volumes:
+  sqlserver_prod_data:
+
+networks:
+  esg-network:
+    driver: bridge
+    name: gestao-esg-prod_esg-network

@@ -1,0 +1,151 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore GestaoResiduosESG.sln
+
+      - name: Build
+        run: dotnet build GestaoResiduosESG.sln --configuration Release --no-restore
+
+  test:
+    name: Testes
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore GestaoResiduosESG.sln
+
+      - name: Testes automatizados
+        run: dotnet test GestaoResiduosESG.sln --configuration Release --no-restore --logger "trx;LogFileName=test-results.trx"
+
+      - name: Publicar resultado dos testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: "**/TestResults/*.trx"
+          if-no-files-found: ignore
+
+  docker:
+    name: Docker
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build da imagem
+        run: docker build -t gestao-residuos-esg:${{ github.sha }} .
+
+  deploy-staging:
+    name: Deploy Staging
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy staging (Docker Compose)
+        run: |
+          chmod +x scripts/deploy.sh scripts/smoke-test.sh
+          ./scripts/deploy.sh staging
+
+      - name: Smoke test staging
+        run: ./scripts/smoke-test.sh staging
+
+      - name: Logs staging
+        if: always()
+        run: docker compose -p gestao-esg-staging -f docker-compose.yml -f docker-compose.staging.yml logs --tail=200
+
+      - name: Evidência do ambiente staging
+        if: always()
+        run: |
+          mkdir -p docs/evidencias
+          {
+            echo "ambiente=staging"
+            echo "url=http://localhost:5001"
+            echo "health=$(curl -fsS http://localhost:5001/health || true)"
+            docker compose -p gestao-esg-staging -f docker-compose.yml -f docker-compose.staging.yml ps
+          } > docs/evidencias/staging-deploy.txt
+          docker compose -p gestao-esg-staging -f docker-compose.yml -f docker-compose.staging.yml ps -a
+
+      - name: Upload evidência staging
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-staging
+          path: docs/evidencias/staging-deploy.txt
+          if-no-files-found: ignore
+
+  deploy-production:
+    name: Deploy Produção
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy produção (Docker Compose)
+        run: |
+          chmod +x scripts/deploy.sh scripts/smoke-test.sh
+          ./scripts/deploy.sh production
+
+      - name: Smoke test produção
+        run: ./scripts/smoke-test.sh production
+
+      - name: Logs produção
+        if: always()
+        run: docker compose -p gestao-esg-prod -f docker-compose.yml -f docker-compose.prod.yml logs --tail=200
+
+      - name: Evidência do ambiente produção
+        if: always()
+        run: |
+          mkdir -p docs/evidencias
+          {
+            echo "ambiente=production"
+            echo "url=http://localhost:5000"
+            echo "health=$(curl -fsS http://localhost:5000/health || true)"
+            docker compose -p gestao-esg-prod -f docker-compose.yml -f docker-compose.prod.yml ps
+          } > docs/evidencias/production-deploy.txt
+
+      - name: Upload evidência produção
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-production
+          path: docs/evidencias/production-deploy.txt
+          if-no-files-found: ignore

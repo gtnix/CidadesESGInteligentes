@@ -1,0 +1,434 @@
+{
+  "info": {
+    "_postman_id": "gestao-residuos-esg-v1",
+    "name": "Gestão de Resíduos ESG",
+    "description": "API para rastreamento de resíduos, pontos de coleta e alertas de capacidade. FIAP - Fase IV - Frameworks .NET",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "SEU_JWT_TOKEN_AQUI",
+      "type": "string",
+      "description": "Token JWT obtido via POST /api/auth/login. Adicione no header: Authorization: Bearer {{token}}"
+    }
+  ],
+  "item": [
+    {
+      "name": "Autenticação",
+      "description": "Gera o token JWT necessário para as operações de escrita (POST, PUT, DELETE).",
+      "item": [
+        {
+          "name": "Login (gera token JWT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var body = pm.response.json();",
+                  "    pm.collectionVariables.set('token', body.token);",
+                  "    console.log('Token salvo na variável {{token}}');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"GestaoESG@2026\"\n}"
+            },
+            "description": "Credenciais de demonstração: username = admin / password = GestaoESG@2026.\n\nO script de teste salva automaticamente o token na variável {{token}} da collection."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resíduos",
+      "item": [
+        {
+          "name": "Listar Resíduos (paginado)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/residuos?page=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "residuos"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar Resíduo por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/residuos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "residuos", "1"]
+            }
+          }
+        },
+        {
+          "name": "Criar Resíduo",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/residuos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Papel\",\n  \"categoria\": \"Reciclavel\",\n  \"unidadeMedida\": \"kg\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Atualizar Resíduo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/residuos/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Papel Reciclável\",\n  \"categoria\": \"Reciclavel\",\n  \"unidadeMedida\": \"kg\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Deletar Resíduo",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/residuos/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pontos de Coleta",
+      "item": [
+        {
+          "name": "Listar Pontos de Coleta (paginado)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/pontos-coleta?page=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pontos-coleta"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar Ponto de Coleta por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/pontos-coleta/1"
+          }
+        },
+        {
+          "name": "Status do Ponto de Coleta (% ocupação)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/pontos-coleta/1/status",
+            "description": "Equivalente a VW_STATUS_PONTOS_COLETA + FN_CALCULA_PERCENTUAL_OCUPACAO do Oracle"
+          }
+        },
+        {
+          "name": "Criar Ponto de Coleta",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/pontos-coleta",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Ponto Central\",\n  \"localizacao\": \"Refeitório - Bloco A\",\n  \"capacidadeMaxima\": 500.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Atualizar Ponto de Coleta",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/pontos-coleta/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Ponto Central Atualizado\",\n  \"localizacao\": \"Refeitório - Bloco B\",\n  \"capacidadeMaxima\": 600.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Deletar Ponto de Coleta",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/pontos-coleta/1"
+          }
+        },
+        {
+          "name": "Registrar Coleta (SP_REGISTRAR_COLETA)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/pontos-coleta/1/registrar-coleta",
+            "description": "Zera quantidade atual do ponto e resolve todos os alertas pendentes. Equivalente a SP_REGISTRAR_COLETA do Oracle."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Descartes",
+      "item": [
+        {
+          "name": "Listar Descartes (paginado)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/descartes?page=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "descartes"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar Descarte por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/descartes/1"
+          }
+        },
+        {
+          "name": "Registrar Descarte (gera alertas automaticamente)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/descartes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"residuoId\": 1,\n  \"pontoColetaId\": 1,\n  \"dataDescarte\": \"2026-06-19T10:00:00\",\n  \"quantidade\": 25.5,\n  \"responsavel\": \"João Silva\"\n}"
+            },
+            "description": "Valida se o resíduo é aceito pelo ponto, atualiza a quantidade e gera alertas quando necessário. Replica TRG_VALIDA_DESCARTE + TRG_ATUALIZA_QUANTIDADE + TRG_VERIFICA_LIMITE_ALERTA."
+          }
+        },
+        {
+          "name": "Deletar Descarte",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/descartes/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Alertas",
+      "item": [
+        {
+          "name": "Listar Alertas (paginado)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/alertas?page=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alertas"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar Alertas Pendentes (VW_ALERTAS_PENDENTES)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/alertas?status=Pendente&page=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alertas"],
+              "query": [
+                { "key": "status", "value": "Pendente" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            },
+            "description": "Equivalente a VW_ALERTAS_PENDENTES do Oracle. Status possíveis: Pendente, EmAnalise, Resolvido, Cancelado"
+          }
+        },
+        {
+          "name": "Buscar Alerta por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/alertas/1"
+          }
+        },
+        {
+          "name": "Resolver Alerta (SP_RESOLVER_ALERTA)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/alertas/1/resolver",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observacao\": \"Coleta realizada pela equipe de manutenção\"\n}"
+            },
+            "description": "Equivalente a SP_RESOLVER_ALERTA do Oracle. A observação é opcional."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pontos de Coleta — Resíduos Vinculados",
+      "description": "Gerencia os tipos de resíduos aceitos por cada ponto de coleta (relação N:N PONTO_RESIDUO).",
+      "item": [
+        {
+          "name": "Listar Resíduos Aceitos pelo Ponto (paginado)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/pontos-coleta/1/residuos?page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pontos-coleta", "1", "residuos"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            },
+            "description": "Lista todos os tipos de resíduos que o ponto de coleta aceita, com paginação."
+          }
+        },
+        {
+          "name": "Vincular Resíduo ao Ponto",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/pontos-coleta/1/residuos/2",
+            "description": "Vincula o resíduo (id=2) ao ponto de coleta (id=1), definindo que esse tipo de resíduo é aceito nesse ponto. Retorna 204 No Content em caso de sucesso."
+          }
+        },
+        {
+          "name": "Desvincular Resíduo do Ponto",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/pontos-coleta/1/residuos/2",
+            "description": "Remove o vínculo entre o resíduo (id=2) e o ponto de coleta (id=1). Retorna 204 No Content em caso de sucesso."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Limites de Armazenamento",
+      "item": [
+        {
+          "name": "Listar Limites (paginado)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/limites?page=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "limites"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar Limite por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/limites/1"
+          }
+        },
+        {
+          "name": "Criar Limite de Armazenamento",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/limites",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pontoColetaId\": 1,\n  \"residuoId\": 1,\n  \"limiteMinimo\": 10.00,\n  \"limiteMaximo\": 500.00,\n  \"percentualAlerta\": 80\n}"
+            }
+          }
+        },
+        {
+          "name": "Atualizar Limite de Armazenamento",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/limites/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"limiteMinimo\": 20.00,\n  \"limiteMaximo\": 600.00,\n  \"percentualAlerta\": 90\n}"
+            }
+          }
+        },
+        {
+          "name": "Deletar Limite de Armazenamento",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/limites/1"
+          }
+        }
+      ]
+    }
+  ]
+}

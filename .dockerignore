@@ -1,0 +1,17 @@
+.git
+.gitignore
+.cursor
+.vs
+.idea
+.vscode
+**/bin
+**/obj
+**/*.user
+.env
+*.md
+docs
+.github
+tests
+entrega
+dist
+**/.DS_Store

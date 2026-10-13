@@ -1,0 +1,31 @@
+# Overlay de STAGING — usar com:
+#   docker compose -p gestao-esg-staging -f docker-compose.yml -f docker-compose.staging.yml up -d --build
+# ou: ./scripts/deploy.sh staging
+
+services:
+  api:
+    container_name: gestao-residuos-api-staging
+    image: gestao-residuos-esg:staging
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Staging
+    networks:
+      - esg-network
+
+  db:
+    container_name: gestao-residuos-db-staging
+    ports:
+      - "1434:1433"
+    volumes:
+      - sqlserver_staging_data:/var/opt/mssql
+    networks:
+      - esg-network
+
+volumes:
+  sqlserver_staging_data:
+
+networks:
+  esg-network:
+    driver: bridge
+    name: gestao-esg-staging_esg-network
