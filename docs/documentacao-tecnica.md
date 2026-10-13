@@ -80,13 +80,18 @@ Tags locais geradas pelos overlays: `gestao-residuos-esg:staging` e `gestao-resi
 
 ## 3. Prints do pipeline (build, testes, deploy)
 
+Run verde na branch `main`: https://github.com/gtnix/CidadesESGInteligentes/actions/runs/38441726696
+
 Ver pasta `docs/evidencias/`:
 
+- `pipeline-overview.png`
 - `pipeline-build.png`
 - `pipeline-testes.png`
 - `pipeline-docker.png`
 - `pipeline-deploy-staging.png`
 - `pipeline-deploy-production.png`
+
+![Visão geral do pipeline](evidencias/pipeline-overview.png)
 
 ![Build](evidencias/pipeline-build.png)
 

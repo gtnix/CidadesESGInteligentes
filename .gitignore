@@ -37,6 +37,7 @@ desktop.ini
 *.zip
 dist/
 entrega/
+docs/documentacao-tecnica.html
 
 ## Cursor
 .cursor/

@@ -141,6 +141,7 @@ Evidências em [`docs/evidencias/`](docs/evidencias/):
 
 | Evidência | Arquivo |
 | --- | --- |
+| Pipeline — visão geral (5 jobs verdes) | [docs/evidencias/pipeline-overview.png](docs/evidencias/pipeline-overview.png) |
 | Pipeline — job Build | [docs/evidencias/pipeline-build.png](docs/evidencias/pipeline-build.png) |
 | Pipeline — job Testes | [docs/evidencias/pipeline-testes.png](docs/evidencias/pipeline-testes.png) |
 | Pipeline — job Docker | [docs/evidencias/pipeline-docker.png](docs/evidencias/pipeline-docker.png) |
@@ -152,7 +153,11 @@ Evidências em [`docs/evidencias/`](docs/evidencias/):
 | Produção `/health` | [docs/evidencias/production-health.png](docs/evidencias/production-health.png) |
 | Containers dos dois ambientes | [docs/evidencias/docker-ps.png](docs/evidencias/docker-ps.png) |
 
-Links do GitHub Actions (preenchidos após o primeiro push): ver a aba **Actions** do repositório.
+Documentação técnica (PDF): [docs/documentacao-tecnica.pdf](docs/documentacao-tecnica.pdf)
+
+Pipeline verde (branch `main`): [run 38441726696](https://github.com/gtnix/CidadesESGInteligentes/actions/runs/38441726696)
+
+Repositório: [github.com/gtnix/CidadesESGInteligentes](https://github.com/gtnix/CidadesESGInteligentes)
 
 ---
 
